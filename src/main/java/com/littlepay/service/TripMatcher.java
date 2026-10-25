@@ -62,6 +62,9 @@ public class TripMatcher {
     private void matchCardTaps(List<Tap> panTaps, List<Trip> trips) {
         Tap openTapOn = null;
         for (Tap tap : panTaps) {
+            if (!fareCalculator.isKnownStop(tap.stopId())) {
+                throw new IllegalArgumentException("Tap " + tap.id() + ": unknown stop '" + tap.stopId() + "'");
+            }
             if (tap.tapType() == TapType.ON) {
                 if (openTapOn != null) {
                     trips.add(incompleteTrip(openTapOn));

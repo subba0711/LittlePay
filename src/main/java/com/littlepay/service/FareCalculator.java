@@ -49,6 +49,15 @@ public class FareCalculator {
     }
 
     /**
+     * Returns whether a stop has fares defined.
+     * @param stopId the stop to check
+     * @return true if the stop is known, false otherwise
+     */
+    public boolean isKnownStop(String stopId) {
+        return fares.containsKey(stopId);
+    }
+
+    /**
      * Adds a fare between two stops. Fares are bidirectional.
      * @param stopA the first stop
      * @param stopB the second stop
