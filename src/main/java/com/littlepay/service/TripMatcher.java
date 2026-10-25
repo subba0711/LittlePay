@@ -24,7 +24,7 @@ public class TripMatcher {
     private static final Logger LOG = LoggerFactory.getLogger(TripMatcher.class);
 
     private static final Comparator<Tap> TAP_ORDER =
-            Comparator.comparing(Tap::dateTime).thenComparingLong(Tap::id);
+            Comparator.comparing(Tap::dateTime).thenComparing(Tap::tapType).thenComparingLong(Tap::id);
 
     private final FareCalculator fareCalculator;
 
@@ -62,6 +62,9 @@ public class TripMatcher {
     private void matchCardTaps(List<Tap> panTaps, List<Trip> trips) {
         Tap openTapOn = null;
         for (Tap tap : panTaps) {
+            if (!fareCalculator.isKnownStop(tap.stopId())) {
+                throw new IllegalArgumentException("Tap " + tap.id() + ": unknown stop '" + tap.stopId() + "'");
+            }
             if (tap.tapType() == TapType.ON) {
                 if (openTapOn != null) {
                     trips.add(incompleteTrip(openTapOn));

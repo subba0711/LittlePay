@@ -41,4 +41,17 @@ class FareCalculatorTest {
         assertThrows(IllegalArgumentException.class, () -> calculator.maxFareFrom("Stop9"));
         assertThrows(IllegalArgumentException.class, () -> calculator.completedFare("Stop1", "Stop9"));
     }
+
+    @ParameterizedTest
+    @CsvSource({
+            "Stop1, true",
+            "Stop2, true",
+            "Stop3, true",
+            "Stop9, false",
+            "stop1, false",
+            "'', false"
+    })
+    void knowsWhichStopsExist(String stop, boolean expected) {
+        assertEquals(expected, calculator.isKnownStop(stop));
+    }
 }

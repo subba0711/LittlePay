@@ -39,7 +39,7 @@ mvn test
 ## Assumptions
 
 - The input file is well formed and has a header row.
-- Taps are matched per PAN in date-time order (ties broken by tap ID), not file order.
+- Taps are matched per PAN in date-time order, not file order. Taps in the same second are ordered ON before OFF, then by tap ID.
 - A tap off only completes a trip if it is on the same company and bus as the tap on. Otherwise the tap on becomes an INCOMPLETE trip and the tap off is ignored.
 - There is no time limit between a tap on and its tap off. A tap on one day and a tap off days later still make one trip.
 - A second tap on before a tap off makes the first tap on an INCOMPLETE trip.

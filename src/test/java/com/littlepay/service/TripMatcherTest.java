@@ -15,6 +15,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TripMatcherTest {
@@ -104,6 +105,17 @@ class TripMatcherTest {
     }
 
     @Test
+    void tapOnComesBeforeTapOffInTheSameSecond() {
+        Trip trip = single(matcher.match(List.of(
+                tap(1, "22-01-2023 13:00:00", TapType.OFF, "Stop2", "Bus37", PAN_A),
+                tap(2, "22-01-2023 13:00:00", TapType.ON, "Stop1", "Bus37", PAN_A))));
+
+        assertEquals(TripStatus.COMPLETED, trip.status());
+        assertEquals(new BigDecimal("3.25"), trip.chargeAmount());
+        assertEquals(0, trip.durationSecs());
+    }
+
+    @Test
     void cardsAreMatchedIndependently() {
         List<Trip> trips = matcher.match(List.of(
                 tap(1, "22-01-2023 13:00:00", TapType.ON, "Stop1", "Bus37", PAN_A),
@@ -147,6 +159,27 @@ class TripMatcherTest {
         assertEquals(TripStatus.INCOMPLETE, trip.status());
         assertEquals(new BigDecimal("7.30"), trip.chargeAmount());
         assertEquals("Bus37", trip.busId());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "Stop9",
+            "''"
+    })
+    void cancelledTripAtUnknownStopThrows(String stop) {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> matcher.match(List.of(
+                tap(1, "22-01-2023 13:00:00", TapType.ON, stop, "Bus37", PAN_A),
+                tap(2, "22-01-2023 13:05:00", TapType.OFF, stop, "Bus37", PAN_A))));
+
+        assertEquals("Tap 1: unknown stop '" + stop + "'", e.getMessage());
+    }
+
+    @Test
+    void ignoredTapOffAtUnknownStopThrows() {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> matcher.match(List.of(
+                tap(1, "22-01-2023 13:00:00", TapType.OFF, "Stop9", "Bus37", PAN_A))));
+
+        assertEquals("Tap 1: unknown stop 'Stop9'", e.getMessage());
     }
 
     @Test
