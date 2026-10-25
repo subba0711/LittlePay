@@ -12,12 +12,22 @@ public class FareCalculator {
 
     private final Map<String, Map<String, BigDecimal>> fares = new HashMap<>();
 
+    /**
+     * Initializes the fare calculator with the fares between stops.
+     */
     public FareCalculator() {
         addFare("Stop1", "Stop2", "3.25");
         addFare("Stop2", "Stop3", "5.50");
         addFare("Stop1", "Stop3", "7.30");
     }
 
+    /**
+     * Returns the fare for a completed trip between two stops.
+     * @param fromStopId the stop where the trip started
+     * @param toStopId the stop where the trip ended
+     * @return the fare for the trip
+     * @throws IllegalArgumentException if no fare is defined between the two stops
+     */
     public BigDecimal completedFare(String fromStopId, String toStopId) {
         BigDecimal fare = fares.getOrDefault(fromStopId, Map.of()).get(toStopId);
         if (fare == null) {
@@ -26,12 +36,24 @@ public class FareCalculator {
         return fare;
     }
 
+    /**
+     * Returns the maximum possible fare from a given stop to any other stop.
+     * @param stopId the stop where the trip started
+     * @return the maximum fare for a trip starting from the given stop
+     * @throws IllegalArgumentException if the stop is unknown
+     */
     public BigDecimal maxFareFrom(String stopId) {
         return fares.getOrDefault(stopId, Map.of()).values().stream()
                 .max(Comparator.naturalOrder())
                 .orElseThrow(() -> new IllegalArgumentException("Unknown stop: " + stopId));
     }
 
+    /**
+     * Adds a fare between two stops. Fares are bidirectional.
+     * @param stopA the first stop
+     * @param stopB the second stop
+     * @param amount the fare amount as a string
+     */
     private void addFare(String stopA, String stopB, String amount) {
         BigDecimal fare = new BigDecimal(amount);
         fares.computeIfAbsent(stopA, k -> new HashMap<>()).put(stopB, fare);
