@@ -40,8 +40,11 @@ mvn test
 
 - The input file is well formed and has a header row.
 - Taps are matched per PAN in date-time order (ties broken by tap ID), not file order.
-- A tap off only completes a trip if it is on the same company and bus as the tap on. Otherwise the tap on becomes an INCOMPLETE trip.
+- A tap off only completes a trip if it is on the same company and bus as the tap on. Otherwise the tap on becomes an INCOMPLETE trip and the tap off is ignored.
+- There is no time limit between a tap on and its tap off. A tap on one day and a tap off days later still make one trip.
 - A second tap on before a tap off makes the first tap on an INCOMPLETE trip.
-- A tap off with no matching tap on is ignored.
+- A tap off with no matching tap on is ignored and logged as a warning.
+- Only Stop1, Stop2 and Stop3 exist. Any other stop stops the run with an error and no output file is written.
+- All times are UTC as given in the input. No time zone or daylight saving conversion is done.
 - INCOMPLETE trips have an empty `Finished` and `ToStopId`, and a duration of 0.
 - Trips are written in order of start time.
