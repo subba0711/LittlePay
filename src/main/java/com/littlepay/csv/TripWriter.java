@@ -2,6 +2,8 @@ package com.littlepay.csv;
 
 import com.littlepay.model.Trip;
 import com.littlepay.util.Formatters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -16,6 +18,8 @@ import java.util.List;
  */
 public class TripWriter {
 
+    private static final Logger LOG = LoggerFactory.getLogger(TripWriter.class);
+
     static final String HEADER =
             "Started, Finished, DurationSecs, FromStopId, ToStopId, ChargeAmount, CompanyId, BusID, PAN, Status";
 
@@ -23,6 +27,7 @@ public class TripWriter {
         try (Writer writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
             write(trips, writer);
         }
+        LOG.info("Wrote {} trips to {}", trips.size(), path);
     }
 
     public void write(List<Trip> trips, Writer writer) throws IOException {

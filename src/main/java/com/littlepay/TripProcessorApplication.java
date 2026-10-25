@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -32,11 +33,17 @@ public class TripProcessorApplication {
         Path output = Path.of(args.length > 1 ? args[1] : DEFAULT_OUTPUT);
 
         try {
-            LOG.info("Reading taps from {}", input);
-            int tripCount = run(input, output);
-            LOG.info("Wrote {} trips to {}", tripCount, output);
+            LOG.info("Processing taps from {} into {}", input, output);
+            run(input, output);
+            LOG.info("Processing complete");
+        } catch (NoSuchFileException e) {
+            LOG.error("Input file not found: {}", e.getFile());
+            System.exit(1);
         } catch (IOException e) {
-            LOG.error("Failed to process taps", e);
+            LOG.error("Failed to read or write trip files", e);
+            System.exit(1);
+        } catch (IllegalArgumentException e) {
+            LOG.error("Invalid input in {}: {}", input, e.getMessage());
             System.exit(1);
         }
     }

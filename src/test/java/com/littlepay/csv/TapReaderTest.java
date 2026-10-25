@@ -67,6 +67,15 @@ class TapReaderTest {
     }
 
     @Test
+    void invalidFieldThrowsWithLineNumber() {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> reader.read(new StringReader(HEADER
+                        + "1, 2023-01-22 13:00:00, ON, Stop1, Company1, Bus37, 5500005555555559\n")));
+
+        assertTrue(e.getMessage().startsWith("Line 2:"), e.getMessage());
+    }
+
+    @Test
     void readsFromFile(@TempDir Path dir) throws IOException {
         Path file = dir.resolve("taps.csv");
         Files.writeString(file, HEADER
