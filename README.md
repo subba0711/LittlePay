@@ -21,7 +21,7 @@ Reads bus tap events from `taps.csv`, matches them into trips, and writes the tr
 
 ```
 mvn package
-java -jar target/littlepay-1.0-SNAPSHOT.jar taps.csv trips.csv
+java -jar littlepay.jar taps.csv trips.csv
 ```
 
 Both arguments are optional and default to `taps.csv` and `trips.csv` in the current directory.
