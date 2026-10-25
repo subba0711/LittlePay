@@ -105,6 +105,17 @@ class TripMatcherTest {
     }
 
     @Test
+    void tapOnComesBeforeTapOffInTheSameSecond() {
+        Trip trip = single(matcher.match(List.of(
+                tap(1, "22-01-2023 13:00:00", TapType.OFF, "Stop2", "Bus37", PAN_A),
+                tap(2, "22-01-2023 13:00:00", TapType.ON, "Stop1", "Bus37", PAN_A))));
+
+        assertEquals(TripStatus.COMPLETED, trip.status());
+        assertEquals(new BigDecimal("3.25"), trip.chargeAmount());
+        assertEquals(0, trip.durationSecs());
+    }
+
+    @Test
     void cardsAreMatchedIndependently() {
         List<Trip> trips = matcher.match(List.of(
                 tap(1, "22-01-2023 13:00:00", TapType.ON, "Stop1", "Bus37", PAN_A),

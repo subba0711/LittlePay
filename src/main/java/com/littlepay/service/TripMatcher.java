@@ -24,7 +24,7 @@ public class TripMatcher {
     private static final Logger LOG = LoggerFactory.getLogger(TripMatcher.class);
 
     private static final Comparator<Tap> TAP_ORDER =
-            Comparator.comparing(Tap::dateTime).thenComparingLong(Tap::id);
+            Comparator.comparing(Tap::dateTime).thenComparing(Tap::tapType).thenComparingLong(Tap::id);
 
     private final FareCalculator fareCalculator;
 
