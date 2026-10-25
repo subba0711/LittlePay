@@ -34,12 +34,26 @@ public class TripMatcher {
 
     /**
      * Matches tap-on and tap-off events into trips, grouped by card (PAN).
-     * Taps are sorted by date-time and ID to ensure correct matching.
+     * A repeated tap (same ID and data) is ignored with a warning.
+     * Taps are sorted by date-time, then ON before OFF in the same second, then by ID.
      * Trips are sorted by start time before returning.
+     * @throws IllegalArgumentException if two taps share an ID but differ, or a tap is at an unknown stop
      */
     public List<Trip> match(List<Tap> taps) {
-        Map<String, List<Tap>> tapsByPan = new LinkedHashMap<>();
+        Map<Long, Tap> tapsById = new LinkedHashMap<>();
         for (Tap tap : taps) {
+            Tap existing = tapsById.putIfAbsent(tap.id(), tap);
+            if (existing == null) {
+                continue;
+            }
+            if (!existing.equals(tap)) {
+                throw new IllegalArgumentException("Tap " + tap.id() + ": duplicate ID with different data");
+            }
+            LOG.warn("Ignoring repeated tap {}", tap.id());
+        }
+
+        Map<String, List<Tap>> tapsByPan = new LinkedHashMap<>();
+        for (Tap tap : tapsById.values()) {
             tapsByPan.computeIfAbsent(tap.pan(), k -> new ArrayList<>()).add(tap);
         }
 
@@ -74,7 +88,7 @@ public class TripMatcher {
                 if (sameVehicle(openTapOn, tap)) {
                     trips.add(finishedTrip(openTapOn, tap));
                 } else {
-                    LOG.warn("Tap off {} is on a different bus to tap on {}, recording tap on as INCOMPLETE and ignoring tap off",
+                    LOG.warn("Tap off {} is on a different company or bus to tap on {}, recording tap on as INCOMPLETE and ignoring tap off",
                             tap.id(), openTapOn.id());
                     trips.add(incompleteTrip(openTapOn));
                 }

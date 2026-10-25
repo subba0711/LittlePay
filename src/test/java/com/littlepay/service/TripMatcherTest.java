@@ -161,6 +161,38 @@ class TripMatcherTest {
         assertEquals("Bus37", trip.busId());
     }
 
+    @Test
+    void tapOffOnDifferentCompanyLeavesTripIncomplete() {
+        Trip trip = single(matcher.match(List.of(
+                tap(1, "22-01-2023 13:00:00", TapType.ON, "Stop1", "Bus37", PAN_A),
+                new Tap(2, at("22-01-2023 13:05:00"), TapType.OFF, "Stop2", "Company2", "Bus37", PAN_A))));
+
+        assertEquals(TripStatus.INCOMPLETE, trip.status());
+        assertEquals(new BigDecimal("7.30"), trip.chargeAmount());
+        assertEquals("Company1", trip.companyId());
+    }
+
+    @Test
+    void repeatedTapIsIgnored() {
+        Tap tapOn = tap(1, "22-01-2023 13:00:00", TapType.ON, "Stop1", "Bus37", PAN_A);
+        Trip trip = single(matcher.match(List.of(
+                tapOn,
+                tapOn,
+                tap(2, "22-01-2023 13:05:00", TapType.OFF, "Stop2", "Bus37", PAN_A))));
+
+        assertEquals(TripStatus.COMPLETED, trip.status());
+        assertEquals(new BigDecimal("3.25"), trip.chargeAmount());
+    }
+
+    @Test
+    void sameTapIdWithDifferentDataThrows() {
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> matcher.match(List.of(
+                tap(1, "22-01-2023 13:00:00", TapType.ON, "Stop1", "Bus37", PAN_A),
+                tap(1, "22-01-2023 13:05:00", TapType.OFF, "Stop2", "Bus37", PAN_A))));
+
+        assertEquals("Tap 1: duplicate ID with different data", e.getMessage());
+    }
+
     @ParameterizedTest
     @CsvSource({
             "Stop9",

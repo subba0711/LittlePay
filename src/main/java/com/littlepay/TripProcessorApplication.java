@@ -37,7 +37,11 @@ public class TripProcessorApplication {
             run(input, output);
             LOG.info("Processing complete");
         } catch (NoSuchFileException e) {
-            LOG.error("Input file not found: {}", e.getFile());
+            if (input.toString().equals(e.getFile())) {
+                LOG.error("Input file not found: {}", input);
+            } else {
+                LOG.error("Output folder not found for: {}", output);
+            }
             System.exit(1);
         } catch (IOException e) {
             LOG.error("Failed to read or write trip files", e);

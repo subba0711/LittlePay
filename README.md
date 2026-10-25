@@ -39,6 +39,7 @@ mvn test
 ## Assumptions
 
 - The input file is well formed and has a header row.
+- Tap IDs are unique. A repeated row (same ID and data) is ignored with a warning, so it is not charged twice. The same ID with different data stops the run with an error.
 - Taps are matched per PAN in date-time order, not file order. Taps in the same second are ordered ON before OFF, then by tap ID.
 - A tap off only completes a trip if it is on the same company and bus as the tap on. Otherwise the tap on becomes an INCOMPLETE trip and the tap off is ignored.
 - There is no time limit between a tap on and its tap off. A tap on one day and a tap off days later still make one trip.
