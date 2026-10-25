@@ -45,7 +45,7 @@ mvn test
 - There is no time limit between a tap on and its tap off. A tap on one day and a tap off days later still make one trip.
 - A second tap on before a tap off makes the first tap on an INCOMPLETE trip.
 - A tap off with no matching tap on is ignored and logged as a warning.
-- Only Stop1, Stop2 and Stop3 exist. Any other stop stops the run with an error and no output file is written.
+- Only Stop1, Stop2 and Stop3 exist. A tap at any other stop is ignored and logged as a warning, and the rest of the file is still processed. If that tap was a tap off, its tap on becomes an INCOMPLETE trip.
 - All times are UTC as given in the input. No time zone or daylight saving conversion is done.
 - INCOMPLETE trips have an empty `Finished` and `ToStopId`, and a duration of 0.
 - Trips are written in order of start time.
