@@ -32,6 +32,11 @@ public class TripMatcher {
         this.fareCalculator = fareCalculator;
     }
 
+    /**
+     * Matches tap-on and tap-off events into trips, grouped by card (PAN).
+     * Taps are sorted by date-time and ID to ensure correct matching.
+     * Trips are sorted by start time before returning.
+     */
     public List<Trip> match(List<Tap> taps) {
         Map<String, List<Tap>> tapsByPan = new LinkedHashMap<>();
         for (Tap tap : taps) {
@@ -48,6 +53,12 @@ public class TripMatcher {
         return trips;
     }
 
+    /**
+     * Matches tap-on and tap-off events for a single card (PAN) into trips.
+     * If a tap-on has no matching tap-off, it is recorded as an incomplete trip.
+     * If a tap-off has no matching tap-on, it is ignored with a warning.
+     * If a tap-off is on a different vehicle than the tap-on, the tap-on is recorded as incomplete and the tap-off is ignored.
+     */
     private void matchCardTaps(List<Tap> panTaps, List<Trip> trips) {
         Tap openTapOn = null;
         for (Tap tap : panTaps) {
@@ -74,6 +85,10 @@ public class TripMatcher {
         }
     }
 
+    /**
+     * Creates a trip from a tap-on and tap-off event, calculating the fare and duration.
+     * If the trip is cancelled (tap-on and tap-off at the same stop), the fare is zero.
+     */
     private Trip finishedTrip(Tap tapOn, Tap tapOff) {
         boolean cancelled = tapOn.stopId().equals(tapOff.stopId());
         BigDecimal charge = cancelled
@@ -92,6 +107,9 @@ public class TripMatcher {
                 cancelled ? TripStatus.CANCELLED : TripStatus.COMPLETED);
     }
 
+    /**
+     * Creates an incomplete trip from a tap-on event, using the maximum fare from the tap-on stop.
+     */
     private Trip incompleteTrip(Tap tapOn) {
         return new Trip(
                 tapOn.dateTime(),
@@ -106,6 +124,9 @@ public class TripMatcher {
                 TripStatus.INCOMPLETE);
     }
 
+    /**
+     * Logs a summary of the number of taps and trips processed, along with a breakdown of trip statuses.
+     */
     private static void logSummary(int tapCount, List<Trip> trips) {
         Map<TripStatus, Long> countByStatus = new EnumMap<>(TripStatus.class);
         for (TripStatus status : TripStatus.values()) {
@@ -114,6 +135,9 @@ public class TripMatcher {
         LOG.info("Matched {} taps into {} trips {}", tapCount, trips.size(), countByStatus);
     }
 
+    /**
+     * Checks if two taps are on the same vehicle (same company and bus).
+     */
     private static boolean sameVehicle(Tap tapOn, Tap tapOff) {
         return tapOn.companyId().equals(tapOff.companyId()) && tapOn.busId().equals(tapOff.busId());
     }

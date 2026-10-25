@@ -26,7 +26,7 @@ public class TripProcessorApplication {
 
     public static void main(String[] args) {
         if (args.length > 2) {
-            LOG.error("Usage: java -jar littlepay.jar [input taps.csv] [output trips.csv]");
+            LOG.error("Usage: java -jar target/littlepay.jar [input taps.csv] [output trips.csv]");
             System.exit(1);
         }
         Path input = Path.of(args.length > 0 ? args[0] : DEFAULT_INPUT);

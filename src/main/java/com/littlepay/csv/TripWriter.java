@@ -23,6 +23,14 @@ public class TripWriter {
     static final String HEADER =
             "Started, Finished, DurationSecs, FromStopId, ToStopId, ChargeAmount, CompanyId, BusID, PAN, Status";
 
+    /**
+     * Writes the list of trips to the specified output file in CSV format.
+     * The first line is a header row, followed by one line per trip.
+     *
+     * @param trips the list of trips to write
+     * @param path  the path to the output file
+     * @throws IOException if an I/O error occurs writing to the file
+     */
     public void write(List<Trip> trips, Path path) throws IOException {
         try (Writer writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
             write(trips, writer);
@@ -30,6 +38,14 @@ public class TripWriter {
         LOG.info("Wrote {} trips to {}", trips.size(), path);
     }
 
+    /**
+     * Writes the list of trips to the specified Writer in CSV format.
+     * The first line is a header row, followed by one line per trip.
+     *
+     * @param trips  the list of trips to write
+     * @param writer the Writer to write to
+     * @throws IOException if an I/O error occurs writing to the Writer
+     */
     public void write(List<Trip> trips, Writer writer) throws IOException {
         BufferedWriter out = new BufferedWriter(writer);
         out.write(HEADER);
@@ -41,7 +57,7 @@ public class TripWriter {
         out.flush();
     }
 
-    // Incomplete trips have no tap off, so Finished and ToStopId are left empty.
+
     private static String format(Trip trip) {
         return String.join(", ",
                 Formatters.formatDateTime(trip.started()),
