@@ -198,20 +198,33 @@ class TripMatcherTest {
             "Stop9",
             "''"
     })
-    void cancelledTripAtUnknownStopThrows(String stop) {
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> matcher.match(List.of(
+    void tapsAtUnknownStopAreIgnored(String stop) {
+        assertTrue(matcher.match(List.of(
                 tap(1, "22-01-2023 13:00:00", TapType.ON, stop, "Bus37", PAN_A),
-                tap(2, "22-01-2023 13:05:00", TapType.OFF, stop, "Bus37", PAN_A))));
-
-        assertEquals("Tap 1: unknown stop '" + stop + "'", e.getMessage());
+                tap(2, "22-01-2023 13:05:00", TapType.OFF, stop, "Bus37", PAN_A))).isEmpty());
     }
 
     @Test
-    void ignoredTapOffAtUnknownStopThrows() {
-        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> matcher.match(List.of(
-                tap(1, "22-01-2023 13:00:00", TapType.OFF, "Stop9", "Bus37", PAN_A))));
+    void tapOffAtUnknownStopLeavesTripIncomplete() {
+        Trip trip = single(matcher.match(List.of(
+                tap(1, "22-01-2023 13:00:00", TapType.ON, "Stop1", "Bus37", PAN_A),
+                tap(2, "22-01-2023 13:05:00", TapType.OFF, "Stop9", "Bus37", PAN_A))));
 
-        assertEquals("Tap 1: unknown stop 'Stop9'", e.getMessage());
+        assertEquals(TripStatus.INCOMPLETE, trip.status());
+        assertEquals(new BigDecimal("7.30"), trip.chargeAmount());
+    }
+
+    @Test
+    void tapOnAtUnknownStopDoesNotAffectOtherTrips() {
+        List<Trip> trips = matcher.match(List.of(
+                tap(1, "22-01-2023 13:00:00", TapType.ON, "Stop9", "Bus37", PAN_A),
+                tap(2, "22-01-2023 13:05:00", TapType.OFF, "Stop2", "Bus37", PAN_A),
+                tap(3, "22-01-2023 14:00:00", TapType.ON, "Stop1", "Bus37", PAN_B),
+                tap(4, "22-01-2023 14:05:00", TapType.OFF, "Stop2", "Bus37", PAN_B)));
+
+        Trip trip = single(trips);
+        assertEquals(PAN_B, trip.pan());
+        assertEquals(TripStatus.COMPLETED, trip.status());
     }
 
     @Test

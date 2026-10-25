@@ -35,9 +35,10 @@ public class TripMatcher {
     /**
      * Matches tap-on and tap-off events into trips, grouped by card (PAN).
      * A repeated tap (same ID and data) is ignored with a warning.
+     * A tap at an unknown stop is ignored with a warning.
      * Taps are sorted by date-time, then ON before OFF in the same second, then by ID.
      * Trips are sorted by start time before returning.
-     * @throws IllegalArgumentException if two taps share an ID but differ, or a tap is at an unknown stop
+     * @throws IllegalArgumentException if two taps share an ID but differ
      */
     public List<Trip> match(List<Tap> taps) {
         Map<Long, Tap> tapsById = new LinkedHashMap<>();
@@ -54,6 +55,10 @@ public class TripMatcher {
 
         Map<String, List<Tap>> tapsByPan = new LinkedHashMap<>();
         for (Tap tap : tapsById.values()) {
+            if (!fareCalculator.isKnownStop(tap.stopId())) {
+                LOG.warn("Ignoring tap {} at unknown stop '{}'", tap.id(), tap.stopId());
+                continue;
+            }
             tapsByPan.computeIfAbsent(tap.pan(), k -> new ArrayList<>()).add(tap);
         }
 
@@ -76,9 +81,6 @@ public class TripMatcher {
     private void matchCardTaps(List<Tap> panTaps, List<Trip> trips) {
         Tap openTapOn = null;
         for (Tap tap : panTaps) {
-            if (!fareCalculator.isKnownStop(tap.stopId())) {
-                throw new IllegalArgumentException("Tap " + tap.id() + ": unknown stop '" + tap.stopId() + "'");
-            }
             if (tap.tapType() == TapType.ON) {
                 if (openTapOn != null) {
                     trips.add(incompleteTrip(openTapOn));
